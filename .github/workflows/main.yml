@@ -42,9 +42,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./backend/
-          file: ./backend/Dockerfile.backend
+          file: ./backend/Dockerfile
           push: true
-          tags: egor213/foodgram_backend:latest
+          tags: mishigr/foodgram_backend:latest
       
   build_frontend_and_push_to_docker_hub:
     name: Push Docker image frontend to DockerHub
@@ -64,4 +64,4 @@ jobs:
         with:
           context: ./frontend/
           push: true
-          tags: egor213/foodgram_frontend:latest 
+          tags: mishigr/foodgram_frontend:latest 

@@ -45,7 +45,7 @@ class DownloadShoppingCartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user_cart = ShoppingCart.objects.filter(user=request.user)
+        # user_cart = ShoppingCart.objects.filter(user=request.user)
 
         ingredients = RecipeIngredient.objects.filter(
             recipe__shopping_cart__user=request.user

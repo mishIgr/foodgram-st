@@ -1,8 +1,0 @@
-DB_NAME=posgresql
-DB_PASSWORD=posgresql
-DB_USER=posgresql
-
-DB_HOST=db
-DB_PORT=5432
-
-DJANGO_SECRET_KEY='DJANGO_SECRET_KEY'

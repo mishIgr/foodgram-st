@@ -7,7 +7,8 @@ router_v1 = DefaultRouter()
 router_v1.register('recipes', RecipeViewSet, basename='recipes')
 
 urlpatterns = [
-    path('', include(router_v1.urls)),
+    path('recipes/', include('shopping_cart.urls')),
     path('recipes/<int:recipe_id>/favorite/',
          FavoriteAPIView.as_view(), name='favorite'),
+    path('', include(router_v1.urls)),
 ]

@@ -45,8 +45,9 @@ INSTALLED_APPS = [
     'subscriptions',
     'ingredients',
     'recipes',
-    'short_urls',
     'shopping_cart',
+    'short_urls',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

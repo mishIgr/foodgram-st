@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.db.models import Sum
+from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
@@ -42,24 +43,22 @@ class ShoppingCartAPIView(APIView):
 
 
 class DownloadShoppingCartView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        # user_cart = ShoppingCart.objects.filter(user=request.user)
-
         ingredients = RecipeIngredient.objects.filter(
             recipe__shopping_cart__user=request.user
         ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
+            'ingredient__measurement_unit',
+            lower_name=Lower('ingredient__name')
         ).annotate(
             total_amount=Sum('amount')
-        ).order_by('ingredient__name')
+        ).order_by('lower_name')
 
         txt_content = "Список покупок:\n\n"
         for idx, ingredient in enumerate(ingredients, start=1):
             txt_content += (
-                f"{idx}. {ingredient['ingredient__name']} - "
+                f"{idx}. {ingredient['lower_name']} - "
                 f"{ingredient['total_amount']} "
                 f"{ingredient['ingredient__measurement_unit']}\n"
             )

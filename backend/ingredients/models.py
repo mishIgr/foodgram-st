@@ -1,17 +1,22 @@
 from django.db import models
 
+from . import constants
+
 
 class Ingredient(models.Model):
-    name = models.CharField(verbose_name='Название', max_length=128)
+    name = models.CharField(
+        verbose_name='Название',
+        max_length=constants.NAME_MAX_LENGTH
+    )
     measurement_unit = models.CharField(
         verbose_name='Единицы измерения',
-        max_length=128
+        max_length=constants.MEASUREMENT_UNIT_MAX_LENGTH
     )
 
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        ordering = ['name']
+        ordering = ('name',)
         constraints = [
             models.UniqueConstraint(
                 fields=('name', 'measurement_unit'),
@@ -20,4 +25,4 @@ class Ingredient(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.name}'
+        return self.name

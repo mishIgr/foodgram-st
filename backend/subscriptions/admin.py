@@ -11,3 +11,13 @@ class SubscriptionAdmin(admin.ModelAdmin):
     )
     search_fields = ('user__username', 'author__username')
     search_help_text = 'Поиск по нику пользователя и автора'
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            'user',
+            'author'
+        ).only(
+            'recipe__name',
+            'user__username'
+        )

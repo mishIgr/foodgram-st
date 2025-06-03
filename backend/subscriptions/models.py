@@ -1,7 +1,6 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth import get_user_model
-
 
 User = get_user_model()
 
@@ -29,10 +28,10 @@ class Subscription(models.Model):
             ),
         )
 
+    def __str__(self):
+        return self.user.username
+
     def clean(self):
         if self.user == self.author:
             raise ValidationError('Нельзя подписаться на самого себя.')
         return super().clean()
-
-    def __str__(self):
-        return f'{self.user}'

@@ -3,38 +3,38 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
+from . import constants
+
 
 class CustomUser(AbstractUser):
     email = models.EmailField(
         verbose_name='Электронная почта',
         unique=True,
-        max_length=254,
+        max_length=constants.EMAIL_MAX_LENGTH,
         help_text='Адрес электронной почты',
     )
     username = models.CharField(
-        verbose_name='Ник пользоваля',
+        verbose_name='Ник пользователя',
         unique=True,
-        max_length=150,
-        validators=[UnicodeUsernameValidator()],
+        max_length=constants.USERNAME_MAX_LENGTH,
+        validators=(UnicodeUsernameValidator(),),
     )
     last_name = models.CharField(
-        verbose_name='Фамилия пользоваля',
-        max_length=150,
+        verbose_name='Фамилия пользователя',
+        max_length=constants.NAME_MAX_LENGTH,
     )
     first_name = models.CharField(
-        verbose_name='Имя пользоваля',
-        max_length=150,
+        verbose_name='Имя пользователя',
+        max_length=constants.NAME_MAX_LENGTH,
     )
     avatar = models.ImageField(
         verbose_name='Аватар',
-        upload_to=getattr(settings, 'UPLOAD_AVATAR', 'users/images/'),
-        null=True,
-        blank=True,
-        default=None,
+        upload_to=settings.UPLOAD_AVATAR,
+        default='',
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
     class Meta:
         verbose_name = 'Пользователь'

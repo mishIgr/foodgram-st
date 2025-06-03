@@ -1,10 +1,11 @@
-from django.db import models
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 from ingredients.models import Ingredient
 
+from . import constants
 
 User = get_user_model()
 
@@ -12,7 +13,7 @@ User = get_user_model()
 class Recipe(models.Model):
     name = models.CharField(
         verbose_name='Наименование рецепта',
-        max_length=256,
+        max_length=constants.RECIPE_NAME_MAX_LENGTH,
         db_index=True,
     )
     text = models.TextField(verbose_name='Описание')
@@ -20,21 +21,19 @@ class Recipe(models.Model):
         verbose_name='Время приготовления в минутах',
         validators=[
             MinValueValidator(
-                limit_value=1, message='Значение не может быть меньше 1!'
+                limit_value=constants.MIN_COOKING_TIME,
+                message=constants.COOKING_TIME_MIN_MESSAGE
             ),
             MaxValueValidator(
-                limit_value=43_200,
-                message=(
-                    'Максимальное значение не может',
-                    'превышать 30 дней (43200 минут)!',
-                ),
+                limit_value=constants.MAX_COOKING_TIME,
+                message=constants.COOKING_TIME_MAX_MESSAGE,
             ),
         ],
-        help_text='Введите значение больше или равное 1',
+        help_text=constants.COOKING_TIME_HELP_TEXT,
     )
     image = models.ImageField(
         verbose_name='Изображение',
-        upload_to=getattr(settings, 'UPLOAD_RECIPES', 'recipes/images/'),
+        upload_to=settings.UPLOAD_RECIPES
     )
     ingredients = models.ManyToManyField(
         to=Ingredient,
@@ -71,12 +70,12 @@ class RecipeIngredient(models.Model):
         verbose_name='Количество',
         validators=[
             MinValueValidator(
-                limit_value=1,
-                message='Количество ингредиентов не может быть меньше 1!',
+                limit_value=constants.MIN_INGREDIENT_AMOUNT,
+                message=constants.INGREDIENT_MIN_MESSAGE,
             ),
             MaxValueValidator(
-                limit_value=1000,
-                message='Количество ингредиентов не может быть больше 1000!',
+                limit_value=constants.MAX_INGREDIENT_AMOUNT,
+                message=constants.INGREDIENT_MAX_MESSAGE,
             ),
         ],
     )
@@ -90,20 +89,29 @@ class RecipeIngredient(models.Model):
         return f'{self.ingredient}'
 
 
-class FavoriteRecipe(models.Model):
+class BaseUserRecipeRelation(models.Model):
     recipe = models.ForeignKey(
-        verbose_name='Рецепт', to=Recipe, on_delete=models.CASCADE
+        'recipes.Recipe',
+        verbose_name='Рецепт',
+        on_delete=models.CASCADE
     )
     user = models.ForeignKey(
+        User,
         verbose_name='Пользователь',
-        to=User,
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE
     )
 
     class Meta:
+        abstract = True
+        unique_together = ('user', 'recipe')
+
+    def __str__(self):
+        return self.recipe.name
+
+
+class FavoriteRecipe(BaseUserRecipeRelation):
+
+    class Meta(BaseUserRecipeRelation.Meta):
         default_related_name = 'favorites'
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
-
-    def __str__(self):
-        return str(self.recipe)

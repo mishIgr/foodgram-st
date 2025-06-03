@@ -1,6 +1,11 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.db.models.query import Prefetch
 
-from .models import FavoriteRecipe, RecipeIngredient, Recipe
+from .models import FavoriteRecipe, Recipe, RecipeIngredient
+
+User = get_user_model()
 
 
 class IngredientRecipeInline(admin.StackedInline):
@@ -10,36 +15,71 @@ class IngredientRecipeInline(admin.StackedInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ("name", "author", "created_at", "favorites_count")
-    readonly_fields = ("favorites_count",)
+    list_display = ('name', 'author', 'created_at', 'favorites_count')
+    readonly_fields = ('favorites_count',)
     search_fields = (
-        "author__username",
-        "name",
+        'author__username',
+        'name',
     )
-    search_help_text = "Поиск по названию рецепта и автору"
-    list_filter = ("created_at",)
+    search_help_text = 'Поиск по названию рецепта и автору'
     inlines = (IngredientRecipeInline,)
 
-    @admin.display(description="Добавлений в избранное")
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.select_related(
+            'author'
+        ).prefetch_related(
+            Prefetch('favorites', queryset=FavoriteRecipe.objects.only(
+                'id', 'recipe')),
+            Prefetch('recipe_ingredients',
+                     queryset=RecipeIngredient.objects
+                     .select_related('ingredient')
+                     .only('id', 'recipe_id', 'ingredient__name', 'amount')),
+        ).annotate(
+            favorites_count=Count('favorites', distinct=True)
+        )
+        return queryset
+
+    @admin.display(description='Добавлений в избранное')
     def favorites_count(self, obj):
-        return obj.favorites.count()
+        return obj.favorites_count
 
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = (
-        "recipe",
-        "ingredient",
-        "amount",
+        'recipe',
+        'ingredient',
+        'amount',
     )
-    search_fields = ("recipe__name", "ingredient__name")
-    list_filter = ("amount",)
+    search_fields = ('recipe__name', 'ingredient__name')
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            'recipe',
+            'ingredient'
+        ).only(
+            'recipe__name',
+            'ingredient__name',
+            'amount'
+        )
 
 
 @admin.register(FavoriteRecipe)
 class FavoriteRecipeAdmin(admin.ModelAdmin):
     list_display = (
-        "recipe",
-        "user",
+        'recipe',
+        'user',
     )
-    search_fields = ("recipe__name", "user__username")
+    search_fields = ('recipe__name', 'user__username')
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            'recipe',
+            'user'
+        ).only(
+            'recipe__name',
+            'user__username'
+        )

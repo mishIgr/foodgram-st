@@ -6,7 +6,7 @@ from django.db import models
 from . import constants
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     email = models.EmailField(
         verbose_name='Электронная почта',
         unique=True,

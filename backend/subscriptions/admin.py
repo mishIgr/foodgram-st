@@ -17,7 +17,4 @@ class SubscriptionAdmin(admin.ModelAdmin):
         return queryset.select_related(
             'user',
             'author'
-        ).only(
-            'recipe__name',
-            'user__username'
         )

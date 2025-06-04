@@ -30,7 +30,9 @@ class SubscriptionsAPIView(APIView):
     serializer_class = SubscriptionSerializer
 
     def post(self, request, author_id):
-        get_object_or_404(User, pk=author_id)
+        if not User.objects.filter(pk=author_id).exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.serializer_class(
             data={'author': author_id, 'user': request.user.id},
             context={'request': request}

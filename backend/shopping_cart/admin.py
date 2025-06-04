@@ -13,7 +13,4 @@ class ShoppingCartAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related('recipe', 'user').only(
-            'recipe__name',
-            'user__username'
-        )
+        return queryset.select_related('recipe', 'user')

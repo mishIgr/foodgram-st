@@ -33,8 +33,7 @@ class RecipeAdmin(admin.ModelAdmin):
                 'id', 'recipe')),
             Prefetch('recipe_ingredients',
                      queryset=RecipeIngredient.objects
-                     .select_related('ingredient')
-                     .only('id', 'recipe_id', 'ingredient__name', 'amount')),
+                     .select_related('ingredient')),
         ).annotate(
             favorites_count=Count('favorites', distinct=True)
         )
@@ -59,10 +58,6 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
         return queryset.select_related(
             'recipe',
             'ingredient'
-        ).only(
-            'recipe__name',
-            'ingredient__name',
-            'amount'
         )
 
 
@@ -79,7 +74,4 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
         return queryset.select_related(
             'recipe',
             'user'
-        ).only(
-            'recipe__name',
-            'user__username'
         )
